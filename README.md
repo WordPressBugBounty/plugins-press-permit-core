@@ -1,0 +1,1 @@
+# plugins-press-permit-core
