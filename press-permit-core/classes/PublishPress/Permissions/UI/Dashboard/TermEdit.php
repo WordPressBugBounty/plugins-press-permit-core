@@ -23,7 +23,7 @@ class TermEdit
 	        if ($taxonomy = PWP::REQUEST_key('taxonomy')) {
 	            if (presspermit()->isTaxonomyEnabled($taxonomy)) {
 	                add_action('admin_head', [$this, 'actScriptsWP']);
-	
+
 	                add_action("{$taxonomy}_edit_form", [$this, 'actExceptionEditUI']);
 
 	            } elseif (defined('PRESSPERMIT_LEGACY_TAXONOMY_ENABLE_METABOX')) {
@@ -273,14 +273,12 @@ class TermEdit
             <div id="post-body">
                 <div id="post-body-content">
                     <?php
-
                     require_once(ABSPATH . 'wp-admin/includes/meta-boxes.php');
 
                     $this->prepMetaboxes();
 
                     $type = ($post_type) ? $post_type : 'post';
                     do_meta_boxes($type, 'advanced', $tag);
-
                     ?>
                 </div> <!-- post-body-content -->
             </div> <!-- post-body -->

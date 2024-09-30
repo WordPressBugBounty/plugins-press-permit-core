@@ -348,7 +348,7 @@ class Groups
                 $wpdb->prepare(
                     "SELECT * FROM $wpdb->members_table $join"  // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
                     . " WHERE member_type = %s $status_clause $metagroup_clause AND user_id IN ('$user_id_csv')",  // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                    
+
                     $member_type
                 )
             );

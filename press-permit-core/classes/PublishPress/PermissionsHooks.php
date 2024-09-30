@@ -339,9 +339,9 @@ class PermissionsHooks
                 $last_entry = reset($ver_history);
 
                 if (!empty($new_entry) && ($last_entry != $new_entry)) {
-	                $ver_history []= $new_entry;
-	                $updated_log = true;
-	            }
+                    $ver_history []= $new_entry;
+                    $updated_log = true;
+                }
             }
 
             // In the version history, log Core version changes only if they are installed directly by Free package
