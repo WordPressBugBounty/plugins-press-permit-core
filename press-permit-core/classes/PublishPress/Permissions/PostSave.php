@@ -41,7 +41,6 @@ class PostSave
         if (!isset($saved_items)) {
             $saved_items = [];
         }
-
         if (isset($saved_items[$post_id])) {
             return;
         }

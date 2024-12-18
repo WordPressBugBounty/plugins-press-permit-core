@@ -345,7 +345,6 @@ class AgentEdit
 
             foreach ($member_types as $member_type) {
                 if (isset($_REQUEST["{$member_type}_csv"]) && ($_REQUEST["{$member_type}_csv"] != -1)) {
-
                     // handle member changes
                     $current = $pp->groups()->getGroupMembers($group_id, $agent_type, 'id', compact('member_type'));
 

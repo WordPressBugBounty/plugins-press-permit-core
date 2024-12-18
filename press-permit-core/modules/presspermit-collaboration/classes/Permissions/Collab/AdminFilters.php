@@ -44,11 +44,9 @@ class AdminFilters
 
         // Track autodrafts by postmeta in case WP sets their post_status to draft
         add_action('save_post', [$this, 'actSavePost'], 10, 3);
-
         add_filter('wp_insert_post_empty_content', [$this, 'fltLogInsertPost'], 10, 2);
 
         add_action('save_post', [$this, 'actUnloadCurrentUserExceptions']);
-
         add_action('created_term', [$this, 'actUnloadCurrentUserExceptions']);
 
         add_filter('editable_roles', [$this, 'fltEditableRoles'], 99);

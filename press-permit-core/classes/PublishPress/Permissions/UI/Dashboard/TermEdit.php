@@ -273,12 +273,14 @@ class TermEdit
             <div id="post-body">
                 <div id="post-body-content">
                     <?php
+
                     require_once(ABSPATH . 'wp-admin/includes/meta-boxes.php');
 
                     $this->prepMetaboxes();
 
                     $type = ($post_type) ? $post_type : 'post';
                     do_meta_boxes($type, 'advanced', $tag);
+
                     ?>
                 </div> <!-- post-body-content -->
             </div> <!-- post-body -->
