@@ -6,13 +6,13 @@
  * Description: Advanced yet accessible content permissions. Give users or groups type-specific roles. Enable or block access for specific posts or terms.
  * Author: PublishPress
  * Author URI:  https://publishpress.com/
- * Version: 4.1.0
+ * Version: 4.1.1
  * Text Domain: press-permit-core
  * Domain Path: /languages/
  * Requires at least: 5.5
  * Requires PHP: 7.2.5
  *
- * Copyright (c) 2024 PublishPress
+ * Copyright (c) 2025 PublishPress
  *
  * GNU General Public License, Free Software Foundation <https://www.gnu.org/licenses/gpl-3.0.html>
  *
@@ -31,7 +31,7 @@
  *
  * @package     PublishPress Permissions
  * @author      PublishPress
- * @copyright   Copyright (c) 2024 PublishPress. All rights reserved.
+ * @copyright   Copyright (c) 2025 PublishPress. All rights reserved.
  * @license		GNU General Public License version 3
  * @link		https://publishpress.com/
  *
@@ -205,7 +205,7 @@ if ((!defined('PRESSPERMIT_FILE') && !$pro_active) || $presspermit_loaded_by_pro
             return;
         }
 
-        define('PRESSPERMIT_VERSION', '4.1.0');
+        define('PRESSPERMIT_VERSION', '4.1.1');
 
         if (!defined('PRESSPERMIT_READ_PUBLIC_CAP')) {
             define('PRESSPERMIT_READ_PUBLIC_CAP', 'read');
