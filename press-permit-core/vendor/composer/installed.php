@@ -3,7 +3,7 @@
         'name' => 'publishpress/publishpress-permissions',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'ad25e79df7b55f25fdf2adc5ca6e3b352694cb08',
+        'reference' => '50987e2065f672d25fd1a0072b7cde90c708d7f2',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'publishpress/publishpress-permissions' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'ad25e79df7b55f25fdf2adc5ca6e3b352694cb08',
+            'reference' => '50987e2065f672d25fd1a0072b7cde90c708d7f2',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
