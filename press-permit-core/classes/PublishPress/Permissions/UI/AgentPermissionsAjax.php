@@ -284,6 +284,8 @@ class AgentPermissionsAjax
                     break;
                 } elseif (0 === strpos($action, 'exceptions_convert_')) {
                     
+                    require_once(PRESSPERMIT_CLASSPATH . '/DB/PermissionsUpdate.php');
+
                     $arr = explode('_', $action);
 
                     if (count($arr) < 3) {
