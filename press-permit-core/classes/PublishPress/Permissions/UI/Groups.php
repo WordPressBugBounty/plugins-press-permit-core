@@ -132,7 +132,6 @@ class Groups
                     $groups_list_table = PluginPage::instance()->table;
                     $groups_list_table->prepare_items();
                 }
-
                 if (!empty(PluginPage::instance()->table_user)) {
                     $users_list_table = PluginPage::instance()->table_user;
                     $users_list_table->prepare_items();
