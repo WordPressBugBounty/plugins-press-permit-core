@@ -35,6 +35,7 @@ $consts = [
 ];
 foreach ($consts as $k => $v) $this->constants[$k] = (object)['descript' => $v, 'type' => $type];
 
+
 $type = 'front-end';
 $consts = [
     'PP_FUTURE_POSTS_BLOGROLL' => esc_html__("Include scheduled posts in the posts query if user can edit them", 'press-permit-core-hints'),
@@ -58,6 +59,7 @@ if (defined('PRESSPERMIT_TEASER_VERSION')) {
 }
 foreach ($consts as $k => $v) $this->constants[$k] = (object)['descript' => $v, 'type' => $type];
 
+
 $type = 'get-pages';
 $consts = [
     'PP_GET_PAGES_PRIORITY' => esc_html__("Filter priority for 'get_pages' filter (default: 1)", 'press-permit-core-hints'),
@@ -76,6 +78,7 @@ if (defined('PRESSPERMIT_TEASER_VERSION')) {
     );
 }
 foreach ($consts as $k => $v) $this->constants[$k] = (object)['descript' => $v, 'type' => $type];
+
 
 $type = 'get-terms';
 $consts = [
@@ -113,6 +116,7 @@ if (defined('PRESSPERMIT_FILE_ACCESS_VERSION')) {
 }
 foreach ($consts as $k => $v) $this->constants[$k] = (object)['descript' => $v, 'type' => $type];
 
+
 $type = 'admin';
 $consts = [
     'PP_USERS_UI_GROUP_FILTER_LINK' => esc_html__("On Users listing, Permission groups in custom column are list filter links instead of group edit links", 'press-permit-core-hints'),
@@ -124,6 +128,7 @@ $consts = [
 ];
 foreach ($consts as $k => $v) $this->constants[$k] = (object)['descript' => $v, 'type' => $type];
 
+
 $type = 'permissions-admin';
 $consts = [
     'PP_FORCE_EXCEPTION_OVERWRITE' => esc_html__("If propagating permissions are assigned to a page branch, overwrite any explicitly assigned permissions in sub-pages", 'press-permit-core-hints'),
@@ -132,6 +137,7 @@ $consts = [
     'PP_FORCE_USERS_MENU' => esc_html__("Don't add a Permissions menu. Instead, add menu items to the Users and Settings menus.", 'press-permit-core-hints'),
 ];
 foreach ($consts as $k => $v) $this->constants[$k] = (object)['descript' => $v, 'type' => $type];
+
 
 $type = 'permission-groups-ui';
 $consts = [
@@ -148,6 +154,7 @@ $consts = [
     'PP_ITEM_MENU_SEARCH_EXCERPT' => esc_html__("Make search function on the post selection metabox look at post excerpt", 'press-permit-core-hints'),
 ];
 foreach ($consts as $k => $v) $this->constants[$k] = (object)['descript' => $v, 'type' => $type];
+
 
 $type = 'user-selection';
 $consts = [
