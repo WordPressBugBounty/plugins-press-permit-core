@@ -5,7 +5,7 @@ Tags: permissions, access, restrict, privacy, capabilities
 Requires at least: 5.5
 Tested up to: 6.8
 Requires PHP: 7.2.5
-Stable tag: 4.4.1
+Stable tag: 4.4.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -240,12 +240,16 @@ Yes, we use the phrase "publishpress-ppcore-install" to share install links. You
 
 == Changelog ==
 
-= 4.4.1 – 31 July 2025 =
-* Fixed: Prevented a potential error on the Capabilities screen in PublishPress Capabilities. #669
-* Added: Integration tab detailing plugin compatibility. #1789
-* Added: Contextual promos for Pro plugin functionality #1789
+= 4.4.2 – 5 August 2025 =
+* Fixed: Prevented warning or error when handling fake post IDs. #1814
+* Fixed: Conflict resolved between Select2 library and other plugins. #1812
+* Fixed: PHP warning caused by invalid `map_meta_cap` parameters. #1810
+* Fixed: `series_grouping` value in `getEnabledPostType()` could return null and cause a REST API error. #1813
+* Updated: Tab color improvements for Pro features. #1815
+
+= 4.4.1 – 30 July 2025 =
+* Added: New UI Promotions Compatibility Pack in the free version to be integration tab. #1789
 * Updated: Changed terminology from "Groups" to "Permissions" in various UI elements for better clarity. #1790
-* Updated: Brazilian Portuguese translations. #667
 
 = 4.4.0 – 9 July 2025 =
 * Fixed: Resolved a mismatch count exception when saving groups. #1747
