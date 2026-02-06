@@ -113,9 +113,20 @@ class Permissions
             10,
             3
         );
+
         if (in_array($pagenow, ['term.php'])) {
             add_filter('gettext', [$this, 'flt_edit_tag'], 99, 3);
         }
+
+        add_filter('user_has_cap', function($caps) {
+            $this->doing_cap_check = true;
+            return $caps;
+        }, 1, 1);
+
+        add_filter('user_has_cap', function($caps) {
+            $this->doing_cap_check = false;
+            return $caps;
+        }, PHP_INT_MAX, 1);
     }
 
     public function isInsertedPost($post_id)
@@ -275,7 +286,6 @@ class Permissions
             'collaboration' => '2.7-beta',
             'compatibility' => '2.7-beta',
             'teaser' => '2.7-beta',
-            'status-control' => '2.7-beta',
             'file-access' => '2.7-beta',
             'import' => '2.7-beta',
             'membership' => '2.7-beta',
@@ -393,12 +403,18 @@ class Permissions
             'presspermit-compatibility',
             'presspermit-file-access',
             'presspermit-membership',
-            'presspermit-status-control',
             'presspermit-sync',
             'presspermit-teaser',
         ];
 
         return (!empty($args['force_all'])) ? $modules : array_diff($modules, apply_filters('presspermit_unavailable_modules', []));
+    }
+
+    public function getSkippedModules()
+    {
+        $modules = [];
+
+        return $modules;
     }
 
     public function moduleExists($slug)

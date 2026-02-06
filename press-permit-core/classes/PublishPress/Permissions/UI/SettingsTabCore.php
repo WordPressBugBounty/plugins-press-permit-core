@@ -17,15 +17,15 @@ class SettingsTabCore
 
     public function optionTabs($tabs)
     {
-        $tabs['core'] = esc_html__('Core', 'press-permit-core');
+        $tabs['core'] = esc_html__('General', 'press-permit-core');
         return $tabs;
     }
 
     public function sectionCaptions($sections)
     {
         $new = [
-            'taxonomies' => esc_html__('Filtered Taxonomies', 'press-permit-core'),
-            'post_types' => esc_html__('Filtered Post Types', 'press-permit-core'),
+            'taxonomies' => esc_html__('Taxonomies', 'press-permit-core'),
+            'post_types' => esc_html__('Post Types', 'press-permit-core'),
             'db_maint' => esc_html__('Database Maintenance', 'press-permit-core'),
         ];
 
@@ -38,8 +38,8 @@ class SettingsTabCore
     public function optionCaptions($captions)
     {
         $opt = [
-            'enabled_taxonomies' => esc_html__('Filtered Taxonomies', 'press-permit-core'),
-            'enabled_post_types' => esc_html__('Filtered Post Types', 'press-permit-core'),
+            'enabled_taxonomies' => esc_html__('Taxonomies', 'press-permit-core'),
+            'enabled_post_types' => esc_html__('Post Types', 'press-permit-core'),
             'define_media_post_caps' => esc_html__('Enforce distinct edit, delete capability requirements for Media', 'press-permit-core'),
         ];
 
@@ -67,7 +67,7 @@ class SettingsTabCore
         $ui = SettingsAdmin::instance();
         $tab = 'core';
 
-        // --- FILTERED TAXONOMIES / POST TYPES SECTION ---
+        // --- TAXONOMIES / POST TYPES SECTION ---
         foreach (['object' => 'post_types', 'term' => 'taxonomies'] as $scope => $section) {
             if (empty($ui->form_options[$tab][$section])) {
                 continue;
@@ -108,6 +108,7 @@ class SettingsTabCore
                     } else {
                         $option_name = 'enabled_post_types';
                         esc_html_e('Modify permissions for these Post Types:', 'press-permit-core');
+                        $this->generateTooltip(esc_html__('This causes unique capabilities to be required for editing each post type. ', 'press-permit-core'), '', 'top', true, ['class' => 'click', 'html' => '<a href="https://publishpress.com/knowledge-base/type-specific-capabilities/" class="btn btn-link" target="_blank" rel="noopener noreferrer">Find out more.</a>']);
                         $types = get_post_types(['public' => true, 'show_ui' => true], 'object', 'or');
                         // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
                         $supported_private_types = apply_filters('presspermit_supported_private_types', []);    // ['series_grouping']);
@@ -151,7 +152,7 @@ class SettingsTabCore
                             <?php else :
                                 $locked = (!empty($locked_types[$key])) ? ' disabled ' : '';
                             ?>
-                                <div class="agp-vtight_input">
+                                <div class="agp-vtight_input" style="display: block; margin-bottom: 8px;">
                                     <input name="<?php echo esc_attr($name); ?>" type="hidden" value="<?php echo (empty($locked_types[$key])) ? '0' : '1'; ?>" />
                                     <label for="<?php echo esc_attr($id); ?>" title="<?php echo esc_attr($key); ?>">
                                         <input name="<?php if (empty($locked_types[$key])) echo esc_attr($name); ?>" type="checkbox" id="<?php echo esc_attr($id); ?>"
@@ -178,8 +179,51 @@ class SettingsTabCore
                                         } else {
                                             echo esc_html($key);
                                         }
+                                        ?>
+                                    </label>
+                                    
+                                    <?php if ('object' == $scope && !empty($enabled[$key])) : 
+                                        // Get current values for summary
+                                        $metabox_option = "pp_enable_metabox_{$key}";
+                                        $permission_screen_option = "pp_include_permission_screen_{$key}";
+                                        
+                                        $enable_metabox = $ui->getOption($metabox_option);
+                                        if (is_null($enable_metabox) || $enable_metabox === false || $enable_metabox === '' || is_array($enable_metabox)) {
+                                            $enable_metabox = '1';
+                                        }
+                                        
+                                        $include_permission = $ui->getOption($permission_screen_option);
+                                        if (is_null($include_permission) || $include_permission === false || $include_permission === '' || is_array($include_permission)) {
+                                            $include_permission = '1';
+                                        }
+                                        
+                                        // Build summary text
+                                        $summary_parts = [];
+                                        if ($enable_metabox === '1') {
+                                            $summary_parts[] = esc_html__('Metabox enabled', 'press-permit-core');
+                                        } else {
+                                            $summary_parts[] = esc_html__('Metabox disabled', 'press-permit-core');
+                                        }
+                                        
+                                        if ($include_permission === '1') {
+                                            $summary_parts[] = esc_html__('Permissions screen enabled', 'press-permit-core');
+                                        } else {
+                                            $summary_parts[] = esc_html__('Permissions screen disabled', 'press-permit-core');
+                                        }
+                                        
+                                        $summary_text = implode(', ', $summary_parts);
+                                        ?>
+                                        <span class="pp-post-type-toggle" data-post-type="<?php echo esc_attr($key); ?>" style="cursor: pointer; margin-left: 5px; display: inline-block; transition: transform 0.3s ease;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+                                                <polyline points="6 9 12 15 18 9"></polyline>
+                                            </svg>
+                                        </span>
+                                        <span class="pp-post-type-summary" data-post-type="<?php echo esc_attr($key); ?>" style="margin-left: 8px; font-size: 0.9em; color: #666; font-style: italic;">
+                                            <?php echo esc_html($summary_text); ?>
+                                        </span>
+                                    <?php endif;
 
-                                        echo '</label>';
+                                        echo '';
 
                                         if (!empty($locked_types[$key]) && isset($key) && $key == 'attachment') {
                                             $this->generateTooltip(esc_html__('This feature allows you to restrict access to Media Library files when they are accessed via WordPress. To restrict viewing of files when they are visited directly via the URL, use the "File Access" feature.', 'press-permit-core'),'','top');
@@ -189,6 +233,39 @@ class SettingsTabCore
                                             if ($cap_type_obj = get_post_type_object($obj->capability_type)) {
                                                 echo '&nbsp;(' . esc_html(sprintf(__('%s capabilities'), $cap_type_obj->labels->singular_name)) . ')';
                                             }
+                                        }
+                                        
+                                        // Add sub-options for enabled post types (only show if 'object' scope)
+                                        if ('object' == $scope && !empty($enabled[$key])) {
+                                            $metabox_option = "pp_enable_metabox_{$key}";
+                                            $permission_screen_option = "pp_include_permission_screen_{$key}";
+                                            
+                                            $ui->all_otype_options[] = $metabox_option;
+                                            $ui->all_otype_options[] = $permission_screen_option;
+                                            
+                                            echo '<div class="filter_post_type_content" data-post-type="' . esc_attr($key) . '" style="margin-left: 25px; margin-top: 5px; display: none;">';
+                                            
+                                            // Enable Metabox checkbox
+                                            echo '<div style="margin-bottom: 3px;">';
+                                            echo '<label for="' . esc_attr($metabox_option) . '" style="font-weight: normal;">';
+                                            echo '<input type="checkbox" name="' . esc_attr($metabox_option) . '" id="' . esc_attr($metabox_option) . '" value="1" ';
+                                            checked('1', $enable_metabox);
+                                            echo ' /> ';
+                                            echo esc_html(sprintf(__('Enable metabox on %s editing screen', 'press-permit-core'), $obj->labels->singular_name));
+                                            echo '</label>';
+                                            echo '</div>';
+                                            
+                                            // Include in Permission Screen checkbox
+                                            echo '<div>';
+                                            echo '<label for="' . esc_attr($permission_screen_option) . '" style="font-weight: normal;">';
+                                            echo '<input type="checkbox" name="' . esc_attr($permission_screen_option) . '" id="' . esc_attr($permission_screen_option) . '" value="1" ';
+                                            checked('1', $include_permission);
+                                            echo ' /> ';
+                                            esc_html_e('Enable on Permissions screen', 'press-permit-core');
+                                            echo '</label>';
+                                            echo '</div>';
+                                            
+                                            echo '</div>';
                                         }
 
                                         echo '</div>';
@@ -204,59 +281,7 @@ class SettingsTabCore
                                 if ($pp->getOption('display_hints')) {
                                     $define_create_posts_cap = get_option('presspermit_define_create_posts_cap');
 
-                                    ?>
-                                    <div class="pp-subtext pp-no-hide" style="margin-top: 15px">
-                                        <?php
-                                        printf(
-                                            esc_html__('%1$sNote%2$s: This causes type-specific capabilities to be required for editing ("edit_things" instead of "edit_posts").', 'press-permit-core'),
-                                            '<span class="pp-important">',
-                                            '</span>',
-                                            "<a href='" . esc_url(admin_url('?page=presspermit-groups')) . "'>",
-                                            '</a>'
-                                        );
-
-                                        if (defined('PUBLISHPRESS_CAPS_VERSION') && $define_create_posts_cap) {
-                                            echo ' ';
-
-                                            $url = admin_url('admin.php?page=pp-capabilities');
-
-                                            printf(
-                                                esc_html__(
-                                                    'Post creation capabilities will also be enforced for all Filtered Post Types. To adjust this, see %3$sRole Capabilities%4$s.',
-                                                    'press-permit-core'
-                                                ),
-                                                '<span class="pp-important">',
-                                                '</span>',
-                                                '<a href="' . esc_url($url) . '">',
-                                                '</a>'
-                                            );
-                                        } elseif (!(defined('PUBLISHPRESS_CAPS_VERSION'))) {
-                                            echo ' ';
-
-                                            $url = Settings::pluginInfoURL('capability-manager-enhanced');
-
-                                            $caption = ($define_create_posts_cap)
-                                                ? __(
-                                                    'Post creation capabilities will also be enforced for all Filtered Post Types. To adjust this, install %3$sPublishPress Capabilities%4$s.',
-                                                    'press-permit-core'
-                                                )
-                                                : __(
-                                                    'To enforce capability requirements for post creation, install %3$sPublishPress Capabilities%4$s.',
-                                                    'press-permit-core'
-                                                );
-                                            
-                                            printf(
-                                                esc_html($caption),
-                                                '<span class="pp-important">',
-                                                '</span>',
-                                                '<span class="plugins update-message"><a href="' . esc_url($url) . '" class="thickbox" title="' . esc_attr('PublishPress Capabilities') . '">',
-                                                '</a></span>'
-                                            );
-                                        }
-                                        ?>
-                                    </div>
-
-                                    <?php if (
+                                    if (
                                         in_array('forum', $types, true) && !$pp->moduleActive('compatibility')
                                         && $pp->getOption('display_extension_hints')
                                     ) : ?>
@@ -291,14 +316,97 @@ class SettingsTabCore
             </tr>
         <?php
         } // end foreach scope
+        
+        // Add JavaScript for expand/collapse functionality
+        ?>
+        <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            // Handle chevron click to toggle content
+            $('.pp-post-type-toggle').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                var postType = $(this).data('post-type');
+                var $content = $('.filter_post_type_content[data-post-type="' + postType + '"]');
+                var $chevron = $(this);
+                var $summary = $('.pp-post-type-summary[data-post-type="' + postType + '"]');
+                
+                // Toggle content visibility
+                $content.slideToggle(300, function() {
+                    // After animation completes, toggle summary visibility
+                    if ($content.is(':visible')) {
+                        $summary.fadeOut(200);
+                    } else {
+                        $summary.fadeIn(200);
+                    }
+                });
+                
+                // Rotate chevron
+                if ($chevron.css('transform') === 'none' || $chevron.css('transform') === 'matrix(1, 0, 0, 1, 0, 0)') {
+                    $chevron.css('transform', 'rotate(180deg)');
+                } else {
+                    $chevron.css('transform', 'rotate(0deg)');
+                }
+            });
+            
+            // Also allow clicking on the label area (but not the checkbox itself)
+            $('.agp-vtight_input label').on('click', function(e) {
+                // Only trigger if we clicked on the label text, not the checkbox
+                if (e.target.tagName !== 'INPUT') {
+                    var $toggle = $(this).siblings('.pp-post-type-toggle');
+                    if ($toggle.length) {
+                        $toggle.trigger('click');
+                    }
+                }
+            });
+            
+            // Update summary text when checkboxes change
+            $('input[id^="pp_enable_metabox_"], input[id^="pp_include_permission_screen_"]').on('change', function() {
+                var optionId = $(this).attr('id');
+                var postType = '';
+                
+                // Extract post type from option ID
+                if (optionId.indexOf('pp_enable_metabox_') === 0) {
+                    postType = optionId.replace('pp_enable_metabox_', '');
+                } else if (optionId.indexOf('pp_include_permission_screen_') === 0) {
+                    postType = optionId.replace('pp_include_permission_screen_', '');
+                }
+                
+                if (postType) {
+                    var $metaboxCheckbox = $('#pp_enable_metabox_' + postType);
+                    var $permissionCheckbox = $('#pp_include_permission_screen_' + postType);
+                    var $summary = $('.pp-post-type-summary[data-post-type="' + postType + '"]');
+                    
+                    // Build summary parts
+                    var summaryParts = [];
+                    
+                    if ($metaboxCheckbox.is(':checked')) {
+                        summaryParts.push('<?php echo esc_js(__('Metabox enabled', 'press-permit-core')); ?>');
+                    } else {
+                        summaryParts.push('<?php echo esc_js(__('Metabox disabled', 'press-permit-core')); ?>');
+                    }
+                    
+                    if ($permissionCheckbox.is(':checked')) {
+                        summaryParts.push('<?php echo esc_js(__('Permissions screen enabled', 'press-permit-core')); ?>');
+                    } else {
+                        summaryParts.push('<?php echo esc_js(__('Permissions screen disabled', 'press-permit-core')); ?>');
+                    }
+                    
+                    // Update summary text
+                    $summary.text(summaryParts.join(', '));
+                }
+            });
+        });
+        </script>
+        <?php
     }
 
-    function generateTooltip($tooltip, $text = '', $position = 'top', $useIcon = true)
+    function generateTooltip($tooltip, $text = '', $position = 'top', $useIcon = true, $args = array('class' => '', 'html' => ''))
     {
         ?>
-        <span data-toggle="tooltip" data-placement="<?php esc_attr_e($position); ?>">
+        <span data-toggle="tooltip" data-placement="<?php esc_attr_e($position); ?>" class="<?php !empty($args['class']) ? esc_attr_e($args['class']) : ''; ?>">
         <?php esc_html_e($text);?>
-        <span class="tooltip-text"><span><?php esc_html_e($tooltip);?></span><i></i></span>
+        <span class="tooltip-text"><span><?php esc_html_e($tooltip);?><?php !empty($args['html']) ? print wp_kses_post($args['html']) : ''; ?></span><i></i></span>
         <?php 
         if ($useIcon) : ?>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 50 50" style="margin-left: 4px; vertical-align: text-bottom;">

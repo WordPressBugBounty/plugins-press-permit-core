@@ -39,7 +39,7 @@ class PostEdit
 
         if (
             current_user_can('pp_manage_settings')
-            && (!$pp->moduleActive('collaboration') || !$pp->moduleActive('status-control'))
+            && (!$pp->moduleActive('collaboration') || !class_exists('PublishPress\Statuses\StatusControl'))
             && $pp->getOption('display_extension_hints')
         ) {
             require_once(PRESSPERMIT_CLASSPATH . '/UI/HintsPostEdit.php');
@@ -63,6 +63,13 @@ class PostEdit
         }
 
         $pp = presspermit();
+
+        // Check if metabox is enabled for this post type
+        $metabox_enabled = $pp->getOption("pp_enable_metabox_{$post_type}");
+        if ($metabox_enabled === '0') {
+            return; // Metabox is explicitly disabled
+        }
+        // If not set or set to '1', continue (default is enabled)
 
         $type_obj = get_post_type_object($post_type);
 

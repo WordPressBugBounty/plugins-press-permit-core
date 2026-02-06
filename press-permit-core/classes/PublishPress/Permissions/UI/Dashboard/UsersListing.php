@@ -147,6 +147,39 @@ class UsersListing
             $table_obj = $args['table_obj'];
         }
 
+        // Determine if this is a plain export (e.g., Admin Columns Pro export)
+        $is_plain_export = (
+            PWP::REQUEST_key_match('acp_export_action', 'export', ['match_type' => 'contains']) && 
+            (
+                PWP::REQUEST_key_match('acp_export_columns', 'pp_roles', ['match_type' => 'contains']) ||
+                PWP::REQUEST_key_match('acp_export_columns', 'pp_groups', ['match_type' => 'contains']) ||
+                PWP::REQUEST_key_match('acp_export_columns', 'pp_exceptions', ['match_type' => 'contains'])
+            )
+        );
+
+        // Cache query_agent_ids to avoid redundant computations across multiple column renders
+        static $cached_query_agent_ids = null;
+        
+        if ($cached_query_agent_ids === null) {
+            // Use table_obj->user_ids if available (custom table object)
+            if (!empty($args['table_obj']) && isset($table_obj->user_ids)) {
+                $cached_query_agent_ids = $table_obj->user_ids;
+            } 
+            // For normal page loads, use the items array
+            elseif (is_object($table_obj) && is_array($table_obj->items) && !empty($table_obj->items)) {
+                $cached_query_agent_ids = array_keys($table_obj->items);
+            } 
+            // For exports where items is NULL, query ALL user IDs once and cache them
+            elseif ($is_plain_export) {
+                global $wpdb;
+                $cached_query_agent_ids = $wpdb->get_col("SELECT ID FROM {$wpdb->users} ORDER BY ID"); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPressVIPMinimum.Variables.RestrictedVariables.user_meta__wpdb__users
+                $cached_query_agent_ids = array_map('intval', $cached_query_agent_ids);
+            } 
+            else {
+                $cached_query_agent_ids = [];
+            }
+        }
+
         switch ($column_name) {
             case 'pp_groups':
                 static $all_groups;
@@ -167,13 +200,16 @@ class UsersListing
                         continue;
 
                     // Passing WP_User objects as query_user_ids causes each of those user's wp_role metagroups to be synchronized with their WP roles
+                    $group_args = ['cols' => 'id'];
+                    
+                    if (!empty($cached_query_agent_ids)) {
+                        $group_args['query_agent_ids'] = $cached_query_agent_ids;
+                    }
+                    
                     $group_ids = $pp_groups->getGroupsForUser(
                         new \WP_User($id),
                         $agent_type,
-                        [
-                            'cols' => 'id', 
-                            'query_agent_ids' => !empty($args['table_obj']) ? $table_obj->user_ids : array_keys($table_obj->items)
-                        ]
+                        $group_args
                     );
 
                     if (('pp_group' == $agent_type) && in_array('pp_net_group', $all_group_types, true)
@@ -212,12 +248,20 @@ class UsersListing
                                 
                                 if (defined('PP_USERS_UI_GROUP_FILTER_LINK') && !empty($_SERVER['REQUEST_URI'])) {
                                     $url = add_query_arg('pp_group', $_id, esc_url_raw($_SERVER['REQUEST_URI']));
-                                    $content .= "<a href='" . esc_url($url) . "'>" . esc_html($name) . "</a>";
+                                    if ($is_plain_export) {
+                                        $content .= esc_html($name);
+                                    } else {
+                                        $content .= "<a href='" . esc_url($url) . "'>" . esc_html($name) . "</a>";
+                                    }
                                 } else {
-                                    $content .= "<a href='"
-                                        . esc_url("admin.php?page=presspermit-edit-permissions&amp;action=edit&amp;agent_type=$agent_type&amp;agent_id=$_id")
-                                        . "' title='" . esc_attr__('edit group', 'press-permit-core') . "'>"
-                                        . esc_html($name) . "</a>";
+                                    if ($is_plain_export) {
+                                        $content .= esc_html($name);
+                                    } else {
+                                        $content .= "<a href='"
+                                            . esc_url("admin.php?page=presspermit-edit-permissions&amp;action=edit&amp;agent_type=$agent_type&amp;agent_id=$_id")
+                                            . "' title='" . esc_attr__('edit group', 'press-permit-core') . "'>"
+                                            . esc_html($name) . "</a>";
+                                    }
                                 }
 
                                 $any_done = true;
@@ -234,7 +278,11 @@ class UsersListing
                 $role_str = '';
 
                 if (!isset($role_info)) {
-                    $_args = ['query_agent_ids' => !empty($args['table_obj']) ? $table_obj->user_ids : array_keys($table_obj->items)];
+                    $_args = [];
+                    
+                    if (!empty($cached_query_agent_ids)) {
+                        $_args['query_agent_ids'] = $cached_query_agent_ids;
+                    }
 
                     if (isset($args['join_groups'])) {
                         $_args['join_groups'] = $args['join_groups'];
@@ -273,29 +321,42 @@ class UsersListing
                     $role_titles[] = str_replace(' ', '&nbsp;', sprintf(__('%s more', 'press-permit-core'), (int) $excess));
                 }
 
-                if ($do_edit_link = current_user_can('pp_assign_roles') && (is_multisite() || current_user_can('edit_user', $id))) {
+                if ($do_edit_link = current_user_can('pp_assign_roles') && 
+                    (is_multisite() || current_user_can('edit_user', $id)) && 
+                    !$is_plain_export) {
                     $edit_link = "admin.php?page=presspermit-edit-permissions&amp;action=edit&amp;agent_id=$id&amp;agent_type=user";
                     $content .= "<a href='" . esc_url($edit_link) . "' ' title='" . esc_attr__('edit user permissions', 'press-permit-core') . "'>";
                 }
 
-                $content .= '<span class="pp-group-site-roles">' . implode(', ', $role_titles) . '</span>';
+                if ($is_plain_export) {
+                    $content .= implode(', ', $role_titles);
+                } else {
+                    $content .= '<span class="pp-group-site-roles">' . implode(', ', $role_titles) . '</span>';
+                }
 
-                if ($do_edit_link) {
+                if ($do_edit_link && !$is_plain_export) {
                     $content .= '</a>';	
                 }
-				
+
                 break;
 
             case 'pp_exceptions':
-                $_args = [
-                    'query_agent_ids' => !empty($args['table_obj']) ? $table_obj->user_ids : array_keys($table_obj->items)
-                ];
+                $_args = [];
+                
+                if (!empty($cached_query_agent_ids)) {
+                    $_args['query_agent_ids'] = $cached_query_agent_ids;
+                }
 
                 if (isset($args['join_groups'])) {
                     $_args['join_groups'] = $args['join_groups'];
                 }
-                
-                $content .= DashboardFilters::listAgentExceptions('user', $id, $_args);
+
+                if ($is_plain_export) {
+                    $content .= wp_strip_all_tags(DashboardFilters::listAgentExceptions('user', $id, $_args));
+                } else {
+                    $content .= DashboardFilters::listAgentExceptions('user', $id, $_args);
+                }
+
                 break;
         }
 

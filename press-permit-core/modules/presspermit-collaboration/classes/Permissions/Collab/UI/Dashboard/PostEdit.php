@@ -19,19 +19,6 @@ class PostEdit
         }
 
         add_filter('presspermit_get_pages_clauses', [$this, 'fltGetPages_clauses'], 10, 3);
-
-        global $pagenow;
-        $post_type = PWP::findPostType();
-        if ($post_type && presspermit()->getTypeOption('default_privacy', $post_type)) {
-            if (PWP::isBlockEditorActive($post_type)) {
-                // separate JS for Gutenberg
-                if (in_array($pagenow, ['post-new.php'])) {
-                    add_action('admin_print_scripts', [$this, 'default_privacy_gutenberg']);
-                }
-            } else {
-                add_action('admin_footer', [$this, 'default_privacy_js']);
-            }
-        }
     }
 
     function fltGetPages_clauses($clauses, $post_type, $args)
@@ -114,9 +101,25 @@ class PostEdit
         }
 
         // For this data source, is there any html content to hide from non-administrators?
+        // Note: Limited Editing Elements feature has been moved to PublishPress Capabilities > Editor Features
         if ($hide_ids = presspermit()->getOption('editor_hide_html_ids')) {
-            require_once(PRESSPERMIT_COLLAB_CLASSPATH . '/UI/Dashboard/PostEditCustomize.php');
-            PostEditCustomize::hide_admin_divs($hide_ids, $object_type);
+            // Feature deprecated - redirect users to PublishPress Capabilities
+            add_action('admin_notices', function() {
+                if (defined('PUBLISHPRESS_CAPS_VERSION')) {
+                    $capabilities_url = admin_url('admin.php?page=pp-capabilities-editor-features');
+                    $message = sprintf(
+                        __('Limited Editing Elements feature has moved to <a href="%s">Capabilities > Editor Features</a>.', 'press-permit-core'),
+                        esc_url($capabilities_url)
+                    );
+                } else {
+                    $install_url = admin_url('plugin-install.php?tab=plugin-information&plugin=capability-manager-enhanced');
+                    $message = sprintf(
+                        __('Limited Editing Elements feature requires <a href="%s" target="_blank">PublishPress Capabilities</a> plugin.', 'press-permit-core'),
+                        esc_url($install_url)
+                    );
+                }
+                echo '<div class="notice notice-warning"><p>' . wp_kses_post($message) . '</p></div>';
+            });
         }
     }
 
@@ -142,71 +145,6 @@ class PostEdit
 
         $suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '.dev' : '';
         wp_enqueue_script('presspermit-collab-post-edit', PRESSPERMIT_COLLAB_URLPATH . "/common/js/post-edit{$suffix}.js", [], PRESSPERMIT_COLLAB_VERSION);
-    }
-
-    function default_privacy_gutenberg() {
-        // Pass default_privacy setting to JavaScript for Gutenberg
-        $post_type = PWP::findPostType();
-        $default_privacy = presspermit()->getTypeOption('default_privacy', $post_type);
-        wp_localize_script('presspermit-collab-post-edit', 'ppEditorConfig', ['defaultPrivacy' => $default_privacy]);
-    }
-
-    function default_privacy_js()
-    {
-        global $post, $typenow;
-
-        if ('post-new.php' != $GLOBALS['pagenow']) {
-            $stati = get_post_stati(['public' => true, 'private' => true], 'names', 'or');
-
-            if (in_array($post->post_status, $stati, true)) {
-                return;
-            }
-        }
-
-        if (!$set_visibility = presspermit()->getTypeOption('default_privacy', $typenow)) {
-            return;
-        }
-
-        if (is_numeric($set_visibility) || !get_post_status_object($set_visibility)) {
-            $set_visibility = 'private';
-        }
-?>
-        <script type="text/javascript">
-            /* <![CDATA[ */
-            jQuery(document).ready(function($) {
-                // Check the radio (use 'checked' for radio inputs) and update hidden value
-                var $radio = $('#visibility-radio-<?php echo esc_attr($set_visibility); ?>');
-                $radio.prop('checked', true).trigger('change');
-                $('#hidden-post-visibility').val('<?php echo esc_attr($set_visibility); ?>');
-
-                // Update the visible label. Prefer localized strings if available.
-                if (typeof(postL10n) != 'undefined') {
-                    var vis = $('#post-visibility-select input:radio:checked').val();
-                    var str = '';
-
-                    if ('private' == vis) {
-                        str = '<?php esc_html_e('Private'); ?>';
-                    } else if (postL10n[vis]) {
-                        str = postL10n[vis];
-                    } else {
-                        str = '<?php esc_html_e('Public'); ?>';
-                    }
-
-                    if (str) {
-                        $('#post-visibility-display').html(str);
-                        setTimeout(function() {
-                            $('.save-post-visibility').trigger('click');
-                        }, 0);
-                    }
-                } else {
-                    $('#post-visibility-display').html(
-                        $('#visibility-radio-<?php echo esc_attr($set_visibility); ?>').next('label').html()
-                    );
-                }
-            });
-            /* ]]> */
-        </script>
-        <?php
     }
 
     function suppress_upload_ui()

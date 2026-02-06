@@ -103,10 +103,6 @@ class AgentPermissionsUI
             echo "<option value='" . esc_attr($type_obj->name) . "'>" . esc_html($type_obj->labels->singular_name) . '</option>';
         }
 
-        if ($option_any) {
-            echo "<option value='(all)'>" . esc_html__('All Post Types', 'press-permit-core') . '</option>';
-        }
-
         if ($option_na) {
             if (presspermit()->role_defs->direct_roles) {
                 echo "<option value='-1'>" . esc_html__('n/a', 'press-permit-core') . '</option>';
@@ -147,6 +143,12 @@ class AgentPermissionsUI
 
                             if ($is_anon)
                                 unset($type_objects['attachment']);
+
+                            // Remove Term option for anonymous/all metagroups if it was added
+                            if (isset($args['agent']) && !empty($args['agent']->metagroup_id) 
+                                && in_array($args['agent']->metagroup_id, ['wp_anon', 'wp_all'], true)) {
+                                unset($type_objects['_term_']);
+                            }
 
                             self::drawTypeOptions($type_objects, ['option_any' => true]);
                             do_action('presspermit_exception_types_dropdown', $args);
@@ -290,16 +292,6 @@ class AgentPermissionsUI
         </table>
 
         <div class='pp-ext-promo'>
-            <?php
-                if (!$pp->moduleActive('status-control') && $pp->getOption('display_extension_hints')) : ?>
-                <div>
-                    <?php
-                    if (presspermit()->isPro()) {
-                        esc_html_e('To assign roles for custom post statuses, activate the Status Control feature.', 'press-permit-core');
-                    }
-                    ?>
-                </div>
-
                 <div>
                     <?php
                     if (function_exists('bbp_get_version') && !$pp->moduleActive('compatibility') && $pp->getOption('display_extension_hints')) {
@@ -315,9 +307,8 @@ class AgentPermissionsUI
                     }
                     ?>
                 </div>
-            <?php endif;
 
-                if ((defined('PUBLISHPRESS_REVISIONS_VERSION') || defined('REVISIONARY_VERSION')) && !$pp->moduleActive('collaboration') && $pp->getOption('display_extension_hints')) : ?>
+                <?php if ((defined('PUBLISHPRESS_REVISIONS_VERSION') || defined('REVISIONARY_VERSION')) && !$pp->moduleActive('collaboration') && $pp->getOption('display_extension_hints')) : ?>
                 <div>
                     <?php esc_html_e('To assign page-specific PublishPress Revision permissions, enable the Editing Permissions feature.', 'press-permit-core'); ?>
                 </div>
@@ -441,6 +432,16 @@ class AgentPermissionsUI
 
                 $post_types = $pp->admin()->orderTypes($pp->getEnabledPostTypes([], 'object'));
                 $taxonomies = $pp->admin()->orderTypes($pp->getEnabledTaxonomies(['object_type' => false], 'object'));
+
+                // Filter post types based on pp_include_permission_screen setting
+                foreach ($post_types as $post_type => $post_type_obj) {
+                    $include_in_permission = $pp->getOption("pp_include_permission_screen_{$post_type}");
+                    // If explicitly set to '0', exclude this post type from permission screens
+                    if ($include_in_permission === '0') {
+                        unset($post_types[$post_type]);
+                    }
+                    // If not set or set to '1', keep it (default is enabled)
+                }
 
                 $perms = [];
 
@@ -762,7 +763,7 @@ class AgentPermissionsUI
                             <div class="permission-type">
                             <div class="subsection-header permission-type-header">
                             <h3 class="section-title permission-type-title">
-                                <?php esc_html_e(sprintf(__('%s Roles', 'press-permit-core'), $type_caption)); ?>
+                                <?php echo esc_html(sprintf(__('%s Roles', 'press-permit-core'), $type_caption)); ?>
                                 <span class="badge badge-count" style=""><span class="count-num">0</span> <?php esc_html_e('item(s)', 'press-permit-core');?></span>
                             </h3>
                             <div class="section-controls">
