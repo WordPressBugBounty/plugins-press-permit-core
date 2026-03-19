@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'publishpress/publishpress-permissions',
-        'pretty_version' => 'v4.6.4',
-        'version' => '4.6.4.0',
-        'reference' => '7f2c18e1688396e8f21689fac0652ae74e221dd5',
+        'pretty_version' => 'v4.7.0',
+        'version' => '4.7.0.0',
+        'reference' => 'cc71e2064ef9a6acf5113b2e4a43ec713c5619ab',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         'publishpress/publishpress-permissions' => array(
-            'pretty_version' => 'v4.6.4',
-            'version' => '4.6.4.0',
-            'reference' => '7f2c18e1688396e8f21689fac0652ae74e221dd5',
+            'pretty_version' => 'v4.7.0',
+            'version' => '4.7.0.0',
+            'reference' => 'cc71e2064ef9a6acf5113b2e4a43ec713c5619ab',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
